@@ -3339,3 +3339,66 @@ func ExampleNewFromFloat() {
 	//0.123123123123123
 	//-10000000000000
 }
+
+func TestFromShiftedInt(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name   string
+		result int64
+		shift  int32
+		input  Decimal
+	}{
+		{
+			name:   "scale 2",
+			input:  NewFromFloatWithExponent(123.12, -2),
+			shift:  2,
+			result: 12312,
+		},
+		{
+			name:   "scale 2",
+			input:  NewFromFloatWithExponent(123.12, -2),
+			shift:  3,
+			result: 123120,
+		},
+		{
+			name:   "scale 2",
+			input:  NewFromFloatWithExponent(123, 0),
+			shift:  3,
+			result: 123000,
+		},
+		{
+			name:   "scale 2",
+			input:  NewFromFloatWithExponent(20, 0),
+			shift:  0,
+			result: 20,
+		},
+		{
+			name:   "scale 2",
+			input:  NewFromFloatWithExponent(20.0, 0),
+			shift:  2,
+			result: 2000,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := tc.input.AsShiftedInt(tc.shift)
+			if result != tc.result {
+				t.Errorf("expected %d, got %d", tc.result, result)
+			}
+		})
+	}
+}
+
+func BenchmarkFromShiftedInt(t *testing.B) {
+	input := NewFromFloatWithExponent(123.12, -2)
+	for i := 0; i < t.N; i++ {
+		input.AsShiftedInt(2)
+	}
+}
+
+func BenchmarkFromShiftedIntSlow(t *testing.B) {
+	input := NewFromFloatWithExponent(123.12, -2)
+	for i := 0; i < t.N; i++ {
+		input.Shift(2).IntPart()
+	}
+}

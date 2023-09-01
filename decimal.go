@@ -945,6 +945,15 @@ func (d Decimal) Exponent() int32 {
 	return d.exp
 }
 
+// Returns the deceimal as an integer, with the decimal poined shifted to the right by `shift`.
+func (d Decimal) AsShiftedInt(shift int32) int64 {
+	raw := d.value.Int64()
+	for i := int32(0); i < shift+d.exp; i++ {
+		raw *= 10
+	}
+	return raw
+}
+
 // Coefficient returns the coefficient of the decimal. It is scaled by 10^Exponent()
 func (d Decimal) Coefficient() *big.Int {
 	d.ensureInitialized()
